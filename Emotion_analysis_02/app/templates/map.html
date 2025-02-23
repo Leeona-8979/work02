@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="map-container" style="height: 600px;"></div>
+<script src="https://webapi.amap.com/maps?v=2.0&key={{ config.AMAP_JS_KEY }}"></script>
+<script>
+// 从后端加载景点数据
+fetch('/api/attractions')
+  .then(res => res.json())
+  .then(attractions => {
+    const map = new AMap.Map('map-container', {
+      zoom: 11,
+      center: [118.874, 28.942]
+    });
+
+    attractions.forEach(attraction => {
+      new AMap.Marker({
+        position: attraction.location,
+        title: attraction.name,
+        map: map,
+        clickable: true
+      }).on('click', () => {
+        window.location.href = `/comments?attraction=${encodeURIComponent(attraction.name)}`;
+      });
+    });
+  });
+</script>
+{% endblock %}
