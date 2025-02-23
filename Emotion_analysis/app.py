@@ -19,8 +19,15 @@ from transformers.utils import logging as transformers_logging
 transformers_logging.disable_progress_bar()
 warnings.filterwarnings("ignore", category=FutureWarning, module="transformers.utils.hub")
 
+# 新增：预加载 BERT 模型
+from Component.bertEncode import load_bert_model
+tokenizer, bert_model = load_bert_model(device="cpu")  # 使用 CPU 或 "cuda"
+
 app = Flask(__name__, static_folder='web')
 
+@app.route('/')
+def home():
+    return "情感分析服务已启动！请访问 /getCmtCount 等接口。"
 
 @app.route('/')
 def index():
@@ -96,6 +103,9 @@ def get_comment_by_sentiment():
 @app.route('/getSentimentList', methods=['GET'])
 def get_sentiment_list():
     sentiment_list = Component.getComment.get_sentiment_list()
+    # text = request.args.get('comment')
+    # # 调用 Component.getSentiment 中的函数，并传入预加载的模型
+    # results = Component.getSentiment.get_sentiment(text, tokenizer, bert_model)
     return jsonify(sentiment_list)
 
 
@@ -136,7 +146,11 @@ def get_keyword_by_sentiment():
 # 获取情感
 @app.route('/getSentiment', methods=['GET'])
 def get_sentiment():
+    # text = request.args.get('comment')
+    # results = Component.getSentiment.get_sentiment(text)
+    # return jsonify(results)
     text = request.args.get('comment')
+    # 调用 Component.getSentiment 中的函数，并传入预加载的模型
     results = Component.getSentiment.get_sentiment(text)
     return jsonify(results)
 
@@ -161,5 +175,5 @@ def get_ip_count():
 if __name__ == '__main__':
     from waitress import serve
 
-    serve(app, host="0.0.0.0", port=8090)
+    serve(app, host="0.0.0.0", port=5010)
     app.run(debug=True)
